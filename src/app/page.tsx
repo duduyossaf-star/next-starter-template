@@ -1,88 +1,140 @@
-import Image from "next/image";
+'use client'; // חובה ב-Next.js App Router כשמשתמשים ב-Hooks כמו useState
 
-export default function Home() {
-	return (
-		<div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-			<main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-				<Image
-					className="dark:invert"
-					src="/next.svg"
-					alt="Next.js logo"
-					width={180}
-					height={38}
-					priority
-				/>
-				<ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-					<li className="mb-2 tracking-[-.01em]">
-						Get started by editing{" "}
-						<code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-							src/app/page.tsx
-						</code>
-						.
-					</li>
-					<li className="tracking-[-.01em]">
-						Save and see your changes instantly.
-					</li>
-				</ol>
+import { useState, useEffect, FormEvent } from 'react';
 
-				<div className="flex gap-4 items-center flex-col sm:flex-row">
-					<a
-						className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-						href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						Read our docs
-					</a>
-				</div>
-			</main>
-			<footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-				<a
-					className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-					href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					<Image
-						aria-hidden
-						src="/file.svg"
-						alt="File icon"
-						width={16}
-						height={16}
-					/>
-					Learn
-				</a>
-				<a
-					className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-					href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					<Image
-						aria-hidden
-						src="/window.svg"
-						alt="Window icon"
-						width={16}
-						height={16}
-					/>
-					Examples
-				</a>
-				<a
-					className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-					href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					<Image
-						aria-hidden
-						src="/globe.svg"
-						alt="Globe icon"
-						width={16}
-						height={16}
-					/>
-					Go to nextjs.org →
-				</a>
-			</footer>
-		</div>
-	);
+// תאריך היעד: 1 במאי 2026
+const TARGET_DATE = new Date('2026-05-01T00:00:00').getTime();
+
+export default function ComingSoonPage() {
+  // מצב עבור המונה
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  // מצב עבור הטופס
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  // לוגיקת המונה לאחור
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date().getTime();
+      const difference = TARGET_DATE - now;
+
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        });
+      } else {
+        // הזמן עבר
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    };
+
+    // חישוב מיידי
+    calculateTimeLeft();
+    // עדכון כל שנייה
+    const timer = setInterval(calculateTimeLeft, 1000);
+
+    // ניקוי ה-Interval כשיוצאים מהעמוד
+    return () => clearInterval(timer);
+  }, []);
+
+  // טיפול בשליחת הטופס
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    console.log('Lead submitted:', email);
+    // כאן תוכל להוסיף קריאת API כדי לשמור את המייל (למשל ל-Cloudflare D1 או שירות חיצוני)
+    setSubmitted(true);
+    setEmail(''); // איפוס השדה
+  };
+
+  // רכיב עזר להצגת מספר בתוך ריבוע במונה
+  const CountdownItem = ({ value, label }: { value: number; label: string }) => (
+    <div className="flex flex-col items-center justify-center bg-gray-900 border border-gray-800 rounded-lg p-4 min-w-[100px] shadow-xl">
+      <div className="text-5xl font-bold text-blue-400 tabular-nums">
+        {value.toString().padStart(2, '0')}
+      </div>
+      <div className="text-sm text-gray-400 mt-1">{label}</div>
+    </div>
+  );
+
+  return (
+    <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-black text-white" dir="rtl">
+      
+      {/* רקע דקורטיבי עדין (גרדיאנט) */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-900 via-black to-black opacity-60 pointer-events-none"></div>
+
+      <div className="relative z-10 max-w-4xl w-full text-center flex flex-col items-center gap-12">
+        
+        {/* כותרת ובשורה */}
+        <header className="space-y-4">
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-blue-400 animate-gradient-x">
+            פורטל התוכן החדש
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto font-light">
+            אנחנו עובדים קשה כדי להביא לכם את חווית התוכן המתקדמת ביותר. 
+            יש למה לחכות.
+          </p>
+        </header>
+
+        {/* המונה לאחור */}
+        <section className="space-y-6">
+          <h2 className="text-xl text-gray-400">ההשקה הרשמית בעוד:</h2>
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
+            <CountdownItem value={timeLeft.days} label="ימים" />
+            <CountdownItem value={timeLeft.hours} label="שעות" />
+            <CountdownItem value={timeLeft.minutes} label="דקות" />
+            <CountdownItem value={timeLeft.seconds} label="שניות" />
+          </div>
+        </section>
+
+        {/* טופס לידים מעוצב */}
+        <section className="w-full max-w-md bg-gray-950 border border-gray-800 p-8 rounded-2xl shadow-2xl space-y-6">
+          <h3 className="text-2xl font-semibold text-gray-100">
+            עדכנו אותי כשהאתר עולה לאוויר
+          </h3>
+          
+          {submitted ? (
+            <div className="bg-green-900/50 border border-green-500 text-green-200 p-4 rounded-lg text-center font-medium">
+              תודה! נעדכן אותך בקרוב.
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="האימייל שלך (למשל: name@company.com)"
+                required
+                className="w-full px-5 py-3.5 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none text-right"
+              />
+              <button
+                type="submit"
+                className="w-full px-6 py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-lg hover:from-blue-700 hover:to-purple-700 transition duration-300 shadow-lg transform hover:scale-[1.02]"
+              >
+                הרשמה לעדכונים
+              </button>
+            </form>
+          )}
+          
+          <p className="text-xs text-gray-600 text-center">
+            * אנחנו מכבדים את הפרטיות שלך. לא יישלח ספאם.
+          </p>
+        </section>
+
+      </div>
+
+      {/* פוטר פשוט */}
+      <footer className="absolute bottom-6 z-10 text-center text-gray-700 text-sm">
+        &copy; {new Date().getFullYear()} פורטל תוכן. כל הזכויות שמורות.
+      </footer>
+    </main>
+  );
 }
