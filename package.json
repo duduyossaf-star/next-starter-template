@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
     "deploy": "npx @opennextjs/cloudflare build"
   },
   "dependencies": {
@@ -26,5 +26,4 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   }
-
 }
